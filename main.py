@@ -21,6 +21,7 @@ ERROR_WAIT_SECONDS = int(
 )  # Wait time after an error
 
 BASE_URL = "https://cloud.lambdalabs.com/api/v1/"
+PORT = os.getenv("PORT", 3000)
 
 app = Flask(__name__)
 
@@ -113,9 +114,14 @@ def health():
     return jsonify(health_status)
 
 
+@app.route("/", methods=["GET"])
+def home():
+    return jsonify({"message": "Instance launcher is running."})
+
+
 if __name__ == "__main__":
     print("Starting instance launcher script...")
     health_status = {"status": "running"}
     Thread(target=launch_instance_loop).start()
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=PORT)
     print("Instance launcher script finished.")
