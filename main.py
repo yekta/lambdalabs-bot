@@ -1,6 +1,8 @@
 import os
 import requests
 import time
+from threading import Thread
+from flask import Flask, jsonify
 from requests.auth import HTTPBasicAuth
 from dotenv import load_dotenv
 
@@ -19,6 +21,11 @@ ERROR_WAIT_SECONDS = int(
 )  # Wait time after an error
 
 BASE_URL = "https://cloud.lambdalabs.com/api/v1/"
+
+app = Flask(__name__)
+
+# Health status
+health_status = {"status": "starting"}
 
 
 def get_instance_types():
@@ -63,7 +70,8 @@ def launch_instance(region_name, instance_type_name, ssh_key_name):
     return response.json()
 
 
-def main():
+def launch_instance_loop():
+    global health_status
     while True:
         print(
             "\n" + "=" * 40 + "\n"
@@ -77,6 +85,7 @@ def main():
             if region_name:
                 result = launch_instance(region_name, INSTANCE_TYPE_NAME, SSH_KEY_NAME)
                 print("Instance launch result:", result)
+                health_status = {"status": "instance launched", "result": result}
                 break
             else:
                 print(
@@ -87,17 +96,26 @@ def main():
             print(
                 f"HTTP error occurred: {http_err}. Retrying in {ERROR_WAIT_SECONDS} seconds."
             )
+            health_status = {"status": "error", "error": str(http_err)}
             time.sleep(ERROR_WAIT_SECONDS)
         except Exception as err:
             print(
                 f"An error occurred: {err}. Retrying in {ERROR_WAIT_SECONDS} seconds."
             )
+            health_status = {"status": "error", "error": str(err)}
             time.sleep(ERROR_WAIT_SECONDS)
 
         time.sleep(CHECK_INTERVAL_SECONDS)
 
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify(health_status)
+
+
 if __name__ == "__main__":
     print("Starting instance launcher script...")
-    main()
+    health_status = {"status": "running"}
+    Thread(target=launch_instance_loop).start()
+    app.run(host="0.0.0.0", port=5000)
     print("Instance launcher script finished.")
