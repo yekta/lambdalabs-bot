@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 	"github.com/joho/godotenv"
 )
 
@@ -33,21 +31,13 @@ type LaunchPayload struct {
 	Quantity         int      `json:"quantity"`
 }
 
-type HealthStatus struct {
-	Status string      `json:"status"`
-	Result interface{} `json:"result,omitempty"`
-	Error  string      `json:"error,omitempty"`
-}
-
 var (
 	apiKey           string
 	instanceTypeName string
 	sshKeyName       string
 	checkInterval    int
 	errorWait        int
-	port             int
 	baseUrl          = "https://cloud.lambdalabs.com/api/v1/"
-	healthStatus     = HealthStatus{Status: "starting"}
 )
 
 func init() {
@@ -70,11 +60,6 @@ func init() {
 	errorWait, _ = strconv.Atoi(os.Getenv("ERROR_WAIT_SECONDS"))
 	if errorWait == 0 {
 		errorWait = 10
-	}
-
-	port, _ = strconv.Atoi(os.Getenv("PORT"))
-	if port == 0 {
-		port = 5000
 	}
 }
 
@@ -152,7 +137,6 @@ func launchInstanceLoop() {
 		instanceTypes, err := getInstanceTypes()
 		if err != nil {
 			log.Printf("Error fetching instance types: %v. Retrying in %d seconds.\n", err, errorWait)
-			healthStatus = HealthStatus{Status: "error", Error: err.Error()}
 			time.Sleep(time.Duration(errorWait) * time.Second)
 			continue
 		}
@@ -160,7 +144,6 @@ func launchInstanceLoop() {
 		regionName, err := checkInstanceAvailability(instanceTypes)
 		if err != nil {
 			log.Printf("Error checking instance availability: %v. Retrying in %d seconds.\n", err, errorWait)
-			healthStatus = HealthStatus{Status: "error", Error: err.Error()}
 			time.Sleep(time.Duration(errorWait) * time.Second)
 			continue
 		}
@@ -169,13 +152,11 @@ func launchInstanceLoop() {
 			result, err := launchInstance(regionName)
 			if err != nil {
 				log.Printf("Error launching instance: %v. Retrying in %d seconds.\n", err, errorWait)
-				healthStatus = HealthStatus{Status: "error", Error: err.Error()}
 				time.Sleep(time.Duration(errorWait) * time.Second)
 				continue
 			}
 
 			log.Printf("Instance launch result: %v\n", result)
-			healthStatus = HealthStatus{Status: "instance launched", Result: result}
 			break
 		} else {
 			log.Printf("No available regions found for %s. Checking again in %d seconds.\n", instanceTypeName, checkInterval)
@@ -185,21 +166,7 @@ func launchInstanceLoop() {
 	}
 }
 
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(healthStatus)
-}
-
 func main() {
-	log.Println("Starting instance launcher script...")
-	healthStatus = HealthStatus{Status: "running"}
-
-	go launchInstanceLoop()
-
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/health", healthHandler)
-
-	log.Printf("Listening on port %d\n", port)
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+strconv.Itoa(port), r))
+	log.Println("Starting lambdalabs-bot...")
+	launchInstanceLoop()
 }
