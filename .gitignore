@@ -1,48 +1,55 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
 
-# Virtual Environment
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-.venv/
+# Output of the 'go tool' command
+*.out
 
-# Distribution / packaging
+# Go workspace
+go.work
+
+# Go build files
 build/
 dist/
-*.egg-info/
-.eggs/
-*.egg
+bin/
+*.exe
+*.log
+*.test
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+# Coverage reports
+coverage.out
+*.coverprofile
 
-# Unit test / coverage reports
-htmlcov/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.pytest_cache/
-.tox/
-.nox/
+# Dependencies
+vendor/
 
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# Environments
+# Environment files
 .env
 .env.*
 
-# VS Code
-.vscode/
+# macOS files
+.DS_Store
 
-# PyCharm
+# Editor directories and files
+.vscode/
 .idea/
+*.swp
+
+# IDE specific
+*.iml
+*.ipr
+*.iws
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+tmp
+
+# Binary
+lambdalabs-bot
