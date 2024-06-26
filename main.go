@@ -64,7 +64,7 @@ func init() {
 }
 
 func getInstanceTypes() (InstanceTypes, error) {
-	log.Printf("Checking availability for instance type %s...", instanceTypeName)
+	log.Printf(`Checking availability for %s...`, instanceTypeName)
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", baseUrl+"instance-types", nil)
 	if err != nil {
@@ -143,7 +143,7 @@ func launchInstanceLoop() {
 
 		regionName, err := checkInstanceAvailability(instanceTypes)
 		if err != nil {
-			log.Printf("Error checking instance availability: %v. Retrying in %d seconds.\n", err, errorWait)
+			log.Printf("Error checking availability: %v. Retrying in %d seconds.\n", err, errorWait)
 			time.Sleep(time.Duration(errorWait) * time.Second)
 			continue
 		}
@@ -151,7 +151,7 @@ func launchInstanceLoop() {
 		if regionName != "" {
 			result, err := launchInstance(regionName)
 			if err != nil {
-				log.Printf("Error launching instance: %v. Retrying in %d seconds.\n", err, errorWait)
+				log.Printf("Error launching instance: %v. Retrying in %d seconds.", err, errorWait)
 				time.Sleep(time.Duration(errorWait) * time.Second)
 				continue
 			}
@@ -159,7 +159,7 @@ func launchInstanceLoop() {
 			log.Printf("Instance launch result: %v\n", result)
 			break
 		} else {
-			log.Printf("No available regions found for %s. Checking again in %d seconds.\n", instanceTypeName, checkInterval)
+			log.Printf(`No available regions for %s. Checking again in %d sec.`, instanceTypeName, checkInterval)
 		}
 
 		time.Sleep(time.Duration(checkInterval) * time.Second)
