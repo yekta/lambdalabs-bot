@@ -48,7 +48,8 @@ func init() {
 	apiKey = os.Getenv("LAMBDA_API_KEY")
 	instanceTypeName = os.Getenv("INSTANCE_TYPE_NAME")
 	if instanceTypeName == "" {
-		instanceTypeName = "gpu_1x_a6000"
+		log.Fatalln("INSTANCE_TYPE_NAME is required")
+		return
 	}
 
 	sshKeyName = os.Getenv("SSH_KEY_NAME")
